@@ -6,19 +6,21 @@ const posts = require('../posts/postDb');
 const router = express.Router();
 
 
+// HTTP requests ---------------------------------------
 
-router.post('/', (req, res) => {
-  try {
-    userDb.insert(req.user)
-    .then(() => res.status(201).json(req.user));
-  } catch {
-    res.status(500).json({ errorMessage: 'There was an error saving the user to the database.' });
-  }
+router.post('/', validateUser, (req, res) => {
+  const newUser = req.body
+  users.insert(newUser)
+  .then((user => res.status(200).json(user)))
+  .catch(() => res.status(400).json({ message: 'Error adding the user to the database.' }))
 });
 
 
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  const newPost = req.body
+  posts.insert(newPost)
+  .then(post => res.status(200).json(post))
+  .catch(() => res.status(400).json({ mesage: 'Error adding the post to the database.'}))
 });
 
 
@@ -48,11 +50,23 @@ router.put('/:id', (req, res) => {
 
 
 
-//custom middleware
+//custom middlewares -----------------------------------
 
+// Validate user 'id' parameter.
+// If valid, store user obj as 'req.user'.
+// If parameter doesn't match, cancel req and 400 w/ message 'invalid user id'
 function validateUserId(req, res, next) {
-  // do your magic!
+  const { id } = req.params
+  users.getById(id)
+  .then(user => {
+    if (user) {
+      req.user = user;
+      next();
+    }
+    res.status(400).json({ message: 'Invalid user id.' });
+  })
 }
+
 
 // Validate user 'body'.
 // If missing user 'body', 400 status with message: 'missing user data'
@@ -66,6 +80,7 @@ function validateUser(req, res, next) {
     next();
   }
 }
+
 
 // Validate post 'body'.
 // If missing post 'body', 400 status with message: 'missing post data'
@@ -83,5 +98,3 @@ function validatePost(req, res, next) {
 
 
 module.exports = router;
-module.exports = validateUser;
-module.exports = validatePost;
