@@ -8,6 +8,7 @@ const router = express.Router();
 
 // HTTP requests ---------------------------------------
 
+// POST new user using the .insert() db function
 router.post('/', validateUser, (req, res) => {
   const newUser = req.body
   users.insert(newUser)
@@ -16,6 +17,7 @@ router.post('/', validateUser, (req, res) => {
 });
 
 
+// Post a new post by user id using the .insert(user) db function
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   const newPost = req.body
   posts.insert(newPost)
@@ -24,26 +26,43 @@ router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
 });
 
 
+// GET users using .get() db function
 router.get('/', (req, res) => {
-  // do your magic!
+  users.get()
+  .then(users => res.status(200).json(users))
+  .catch(() => res.status(400).json({ message: 'The users could not be retrieved from the database.' }))
 });
 
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+// Get users by id using the .getById(id) db function
+router.get('/:id', validateUserId, (req, res) => {
+  if (req.user) res.status(200).json(req.user)
+  else {
+    res.status(400).json({ message: 'The users could not be retrieved from the database.' })}
 });
 
 
-router.get('/:id/posts', (req, res) => {
-  // do your magic!
+// GET posts by user id using the .getUserPosts(userId) db function
+router.get('/:id/posts', validateUserId, (req, res) => {
+  const user = req.body
+  user.getUserPosts(user.id)
+  .then(userPosts => res.status(200).json(userPosts))
+  .catch(() => res.status(400).json({message: 'The user posts could not be retrieved.'}))
 });
 
 
+// DELETE user by id using the .remove(id) db function
 router.delete('/:id', (req, res) => {
-  // do your magic!
+  const user = req.body
+  user.remove(user)
+  .then(userId => {
+    if (userId.length === 0) res.status(400).json({message: 'The user could not be deleted from the database.' })
+    else res.status(200).json({message: 'The user had been deleted from the database.' })
+  })
 });
 
 
+// PUT changes to a user by id using .update(id, changes) db function
 router.put('/:id', (req, res) => {
   // do your magic!
 });
