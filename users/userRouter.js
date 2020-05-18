@@ -63,8 +63,8 @@ router.delete('/:id', (req, res) => {
 
 
 // PUT changes to a user by id using .update(id, changes) db function
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put('/:id', validateUserId, validateUser, (req, res) => {
+  const { id } = req.params
 });
 
 
